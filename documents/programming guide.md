@@ -1,20 +1,14 @@
 # Programming guide
 
-The BIT4 microcontroller has 256 Bytes of programm memory, split in 16 pages
-with each 16 instructions.
-\
+The BIT4 microcontroller has 256 Bytes of programm memory, split in 16 pages with each 16 instructions.
 A instruction is 8bit wide and consists of an command and data:
-![instruction](img/instruction.png)
-
 
 To enter the programming mode, hold BTN2 down, press the RESET button once and then release BTN2.
-\
-When in programming mode, step through the instructions with BTN2. When going to a new instruction, the leds will show the current address for a fraktion of a second.
-\
+When in programming mode, step through the instructions with BTN2. When going to a new instruction, 
+the leds will show the current address for a fraktion of a second.
 With BTN1 the value of the command and data of the current instruction can be changed.
-\
 When stepping to a new address with BTN2, the instuction of the address above gets saved in the EEPROM.
-When finished, press RESET to leave the programming mode and to start the programm execution.
+At the end, press RESET to leave the programming mode and to start the programm execution.
 
 ## Instruction set explained:
 
@@ -41,6 +35,7 @@ When finished, press RESET to leave the programming mode and to start the progra
 
 
 **Hello World Blinki:**
+
 | address | instruction |                    comment |
 | :------ | :---------- | -------------------------: |
 | 0       | 1f          |  turn all leds on doutA on |
@@ -51,6 +46,7 @@ When finished, press RESET to leave the programming mode and to start the progra
 
 \
 **Binary counter:**
+
 | address | instruction |          comment |
 | :------ | :---------- | ---------------: |
 | 0       | 5B          |        DoutB = A |
