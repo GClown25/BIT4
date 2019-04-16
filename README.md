@@ -61,3 +61,21 @@ At the end, press RESET to leave the programming mode and to start the programm 
 | 2       | 71          |              A++ |
 | 3       | 28          |   wait for 500ms |
 | 4       | 34          | relative jump -4 |
+
+\
+**Blinki with adjustable speed:**
+
+| address   | instruction |               comment |
+| :-------- | :---------- | --------------------: |
+| **main:** |
+| 0         | 10          |           DoutA = 0x0 |
+| 1         | d5          |           call myWait |
+| 2         | 1f          |           DoutA = 0xf |
+| 3         | d5          |           call myWait |
+| 4         | 34          |      relative jump -4 |
+| **myWait:** |
+| 5         | 64          |               A = Din |
+| 6         | 52          |                 C = A |
+| 7         | 25          |         wait for 50ms |
+| 8         | a7          | for(C > 0; C--) jmp 7 |
+| 9         | e0          |                return |
