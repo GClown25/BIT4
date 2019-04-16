@@ -11,7 +11,7 @@ A instruction is 8bit wide and consists of an command and data:
 ![instruction](img/instruction.png)
 \
 To enter the programming mode, hold BTN2 down, press the RESET button once and then release BTN2.
-When in programming mode, step through the instructions with BTN2. When going to a new instruction, 
+In programming mode, step through the instructions with BTN2. When going to a new instruction, 
 the leds will show the current address for a fraktion of a second.
 With BTN1 the value of the command and data of the current instruction can be changed.
 When stepping to a new address with BTN2, the instuction of the address above gets saved in the EEPROM.
