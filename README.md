@@ -83,3 +83,7 @@ https://www.youtube.com/watch?v=YPoedGGZs4g
 | 7         | 25          |         wait for 50ms |
 | 8         | a7          | for(C > 0; C--) jmp 7 |
 | 9         | e0          |                return |
+
+\
+**Credits:**\
+The idea for this project came from the german microcontroller learning plattform "TPS" (http://elektronik-labor.de/Lernpakete/TPS/TPS0.html).
