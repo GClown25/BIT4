@@ -53,6 +53,8 @@ At the end, press RESET to leave the programming mode and to start the programm 
 
 \
 **Binary counter:**
+\
+https://www.youtube.com/watch?v=6CpZszKlP7Y
 
 | address | instruction |          comment |
 | :------ | :---------- | ---------------: |
@@ -64,6 +66,8 @@ At the end, press RESET to leave the programming mode and to start the programm 
 
 \
 **Blinki with adjustable speed:**
+\
+https://www.youtube.com/watch?v=YPoedGGZs4g
 
 | address   | instruction |               comment |
 | :-------- | :---------- | --------------------: |
