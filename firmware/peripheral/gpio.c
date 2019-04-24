@@ -2,7 +2,7 @@
  * gpio.c
  *
  * Created: 09.02.2019
- * Author : Martin Frauenschuh
+ * Author : GClown25
  */ 
 
 #include "gpio.h"
@@ -73,6 +73,20 @@ void gpio_dout_writeBit(GPIO_DOUT *aDout, uint8_t aBit, uint8_t aBitNr){
 	
 	*aDout->out = tempReg;
 }
+
+uint8_t gpio_dout_read(GPIO_DOUT *aDout){
+	uint8_t tempReg;
+	
+	tempReg = (*aDout->out >> aDout->pin0) & 0xf;
+	
+	if(aDout->sequence == REVERSED){
+		return lookupReverse4bit[tempReg];
+		}else{
+		return tempReg;
+	}	
+	
+}
+
 
 
 uint8_t gpio_din_read(GPIO_DIN *aDin){

@@ -2,7 +2,7 @@
  * eeprom.h
  *
  * Created: 08.02.2019
- * Author : Martin Frauenschuh
+ * Author : GClown25
  */ 
 
 #ifndef EEPROM_H

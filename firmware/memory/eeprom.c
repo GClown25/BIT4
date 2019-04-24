@@ -2,7 +2,7 @@
  * eeprom.c
  *
  * Created: 08.02.2019
- * Author : Martin Frauenschuh
+ * Author : GClown25
  */ 
 
 #include "eeprom.h"

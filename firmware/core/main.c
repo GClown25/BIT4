@@ -2,7 +2,7 @@
 * main.c
 *
 * Created: 09.02.2019
-* Author : Martin Frauenschuh
+* Author : GClown25
 */
 
 #define F_CPU 5000000UL
@@ -10,11 +10,14 @@
 #include <util/delay.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <stdlib.h>
 
 #include "core/tps.h"
 #include "memory/eeprom.h"
 #include "peripheral/gpio.h"
 #include "peripheral/timer.h"
+#include "peripheral/adc.h"
+#include "common/randomSeed.h"
 
 #define MEMORY_SIZE 256
 
@@ -61,9 +64,11 @@ void  commandF();
 
 int main(void){
 	
-	//Set prescaler to 4
-	CCP = 0xd8;
-	CLKCTRL.MCLKCTRLB = 0x03;
+	//Clock init
+	CCP = CCP_IOREG_gc;
+	CLKCTRL.MCLKCTRLA = CLKCTRL_CLKSEL_OSC20M_gc;
+	CCP = CCP_IOREG_gc;
+	CLKCTRL.MCLKCTRLB = CLKCTRL_PDIV_4X_gc | CLKCTRL_PEN_bm;
 	
 	//turn on POWER incicator led
 	PORTC.DIRSET = PIN1_bm;
@@ -127,6 +132,9 @@ int main(void){
 	timerb_initPWM(&PWM1);
 	timerb_initPWM(&PWM2);
 	
+	adcInit();
+	srand(getSeed());
+	adcDeInit();
 	
 	//Enter program mode
 	if(gpio_btn_read(&btn2) == 0){
@@ -293,6 +301,18 @@ void command5(){
 		case 0xB:
 			gpio_dout_write(&doutB, varA);
 		break;
+		case 0xC:
+			gpio_dout_writeBit(&doutB, varA, 0);
+		break;
+		case 0xD:
+			gpio_dout_writeBit(&doutB, varA, 1);
+		break;
+		case 0xE:
+			gpio_dout_writeBit(&doutB, varA, 2);
+		break;
+		case 0xF:
+			gpio_dout_writeBit(&doutB, varA, 3);
+		break;
 	}
 	progCounter++;
 }
@@ -324,11 +344,14 @@ void command6(){
 		case 0x8:
 			varA = gpio_din_readBit(&dinA, 3);
 		break;
-		case 0x9:
-			//TODO: A = AD1
+		case 0xB:
+			varA = rand() % 16;
 		break;
-		case 0xA:
-			//TODO: A = AD2
+		case 0xC:
+			varA = gpio_dout_read(&doutA);
+		break;
+		case 0xD:
+			varA = gpio_dout_read(&doutB);
 		break;
 		case 0xE:
 			varA = ram[ramAddr] & 0xf;

@@ -2,7 +2,7 @@
  * tps.c
  *
  * Created: 09.02.2019
- * Author : Martin Frauenschuh
+ * Author : GClown25
  */ 
 
 #include "tps.h"

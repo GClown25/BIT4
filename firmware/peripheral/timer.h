@@ -2,7 +2,7 @@
  * timer.h
  *
  * Created: 10.4.2019
- * Author : Martin Frauenschuh
+ * Author : GClown25
  */ 
 
 #ifndef TIMER_H
