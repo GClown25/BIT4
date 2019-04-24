@@ -53,6 +53,8 @@ At the end, press RESET to leave the programming mode and to start the programm 
 
 \
 **Binary counter:**
+\
+https://www.youtube.com/watch?v=6CpZszKlP7Y
 
 | address | instruction |          comment |
 | :------ | :---------- | ---------------: |
@@ -64,6 +66,8 @@ At the end, press RESET to leave the programming mode and to start the programm 
 
 \
 **Blinki with adjustable speed:**
+\
+https://www.youtube.com/watch?v=YPoedGGZs4g
 
 | address   | instruction |               comment |
 | :-------- | :---------- | --------------------: |
@@ -79,3 +83,7 @@ At the end, press RESET to leave the programming mode and to start the programm 
 | 7         | 25          |         wait for 50ms |
 | 8         | a7          | for(C > 0; C--) jmp 7 |
 | 9         | e0          |                return |
+
+\
+**Credits:**\
+The idea for this project came from the german microcontroller learning plattform "TPS" (http://elektronik-labor.de/Lernpakete/TPS/TPS0.html).
