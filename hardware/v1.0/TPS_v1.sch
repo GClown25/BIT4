@@ -1340,7 +1340,7 @@ Source: &lt;a href="http://uk.rs-online.com/web/p/products/5468827"&gt; Datashee
 </variantdefs>
 <classes>
 <class number="0" name="default" width="0" drill="0">
-<clearance class="0" value="0.205"/>
+<clearance class="0" value="0.127"/>
 </class>
 </classes>
 <parts>
