@@ -99,6 +99,12 @@ int main(void){
 	PORTC.DIRSET = PIN1_bm;
 	PORTC.OUTSET = PIN1_bm;
 	
+#ifdef EXTENDED_DEBUG
+	/* Init debug pin */
+	PORTA.DIRSET = PIN0_bm;
+	PORTA.OUTCLR = PIN0_bm;
+#endif //EXTENDED_DEBUG
+
 	/* Init MCP73831 charging indicator led */
 	PORTC.DIRSET = PIN2_bm;
 	
@@ -156,7 +162,12 @@ int main(void){
 			buffer[i] = EEPROM_read(i);
 		}
 		
-		while(progCounter < MEMORY_SIZE){	
+		while(progCounter < MEMORY_SIZE){
+				
+#ifdef EXTENDED_DEBUG
+			PORTA.OUTTGL = PIN0_bm;
+#endif //EXTENDED_DEBUG
+
 			tps_splitInstruction(buffer[progCounter], &command, &data);
 			
 			( *(commandFunc[command]))();
