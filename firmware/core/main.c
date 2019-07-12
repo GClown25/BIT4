@@ -19,145 +19,140 @@
 #include "peripheral/adc.h"
 #include "common/randomSeed.h"
 
+/* Size of the EEPROM in bytes */
 #define MEMORY_SIZE 256
 
-GPIO_BTN mcpStat;
-
-GPIO_DOUT doutA, doutB;
-GPIO_DIN dinA;
-GPIO_BTN btn1, btn2;
+/* IOs */
+GPIO_BTN mcpStat =	{ &PORTC.PIN0CTRL,	&PORTC.DIR,	&PORTC.IN,	PIN0_bp };
+GPIO_BTN btn1 =		{ &PORTD.PIN0CTRL,	&PORTD.DIR,	&PORTD.IN,	PIN0_bp	};
+GPIO_BTN btn2 =		{ &PORTD.PIN5CTRL,	&PORTD.DIR,	&PORTD.IN,	PIN5_bp };
+GPIO_DOUT doutA =	{ &PORTA.OUT,	&PORTA.DIR,	NORMAL,	PIN4_bp };	
+GPIO_DOUT doutB =	{ &PORTB.OUT,	&PORTB.DIR,	NORMAL,	PIN0_bp };
+GPIO_DIN dinA =		{ &PORTD.PIN1CTRL,	&PORTD.DIR,	&PORTD.IN,	REVERSED,	PIN1_bp };
 
 #define PWM1 TCB0
 #define PWM2 TCB1
 
+/* Global variables for BIT4 interpreter */
 uint16_t progCounter = 0;
 uint8_t page = 0;
 uint8_t retVector = 0;
 uint8_t instruction, command, data;
-uint8_t buffer[256];
+uint8_t buffer[MEMORY_SIZE];
 
 int8_t varA = 0, varB = 0, varC = 0, varD = 0;
 
 uint8_t ram[16] = {0};
 uint8_t ramAddr = 0;
 
-//Lookup Table for Wait command
+/* Lookup table for wait command */
 const uint16_t waitCounterNr[] = {1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 30000, 60000};
 
-void programmInstruction();
-void  command0();
-void  command1();
-void  command2();
-void  command3();
-void  command4();
-void  command5();
-void  command6();
-void  command7();
-void  command8();
-void  command9();
-void  commandA();
-void  commandB();
-void  commandC();
-void  commandD();
-void  commandE();
-void  commandF();
+/* Function prototypes */
+static void programmInstruction();
+static void  command0();
+static void  command1();
+static void  command2();
+static void  command3();
+static void  command4();
+static void  command5();
+static void  command6();
+static void  command7();
+static void  command8();
+static void  command9();
+static void  commandA();
+static void  commandB();
+static void  commandC();
+static void  commandD();
+static void  commandE();
+static void  commandF();
+
+void ( *commandFunc[])() = {
+	command0,
+	command1,
+	command2,
+	command3,
+	command4,
+	command5,
+	command6,
+	command7,
+	command8,
+	command9,
+	commandA,
+	commandB,
+	commandC,
+	commandD,
+	commandE,
+	commandF
+};
+
 
 int main(void){
 	
-	//Clock init
+	/* Clock init */
 	CCP = CCP_IOREG_gc;
 	CLKCTRL.MCLKCTRLA = CLKCTRL_CLKSEL_OSC20M_gc;
 	CCP = CCP_IOREG_gc;
 	CLKCTRL.MCLKCTRLB = CLKCTRL_PDIV_4X_gc | CLKCTRL_PEN_bm;
 	
-	//turn on POWER incicator led
+	/* turn on POWER incicator led */
 	PORTC.DIRSET = PIN1_bm;
 	PORTC.OUTSET = PIN1_bm;
 	
-	//Init MCP73831 charging indicator led
+#ifdef EXTENDED_DEBUG
+	/* Init debug pin */
+	PORTA.DIRSET = PIN0_bm;
+	PORTA.OUTCLR = PIN0_bm;
+#endif //EXTENDED_DEBUG
+
+	/* Init MCP73831 charging indicator led */
 	PORTC.DIRSET = PIN2_bm;
 	
-	//Init MCP73831 Charge status sensing
-	mcpStat.in = &PORTC.IN;
-	mcpStat.dir = &PORTC.DIR;
-	mcpStat.pinctrl = &PORTC.PIN0CTRL;
-	mcpStat.pin = PIN0_bp;
+	/* Init MCP73831 Charge status sensing */
 	gpio_btn_init(&mcpStat);
 	
 	CPUINT.CTRLA |= CPUINT_LVL0RR_bm; // Set the Round-robin Scheduling Enable bit
-	CPUINT.LVL0PRI = PORTC_PORT_vect_num; //Set Interrupt priority
-	PORTC.PIN0CTRL |= 0x01;	//Enable interrupt on both edges
+	CPUINT.LVL0PRI = PORTC_PORT_vect_num; //Set Interrupt priority
+	PORTC.PIN0CTRL |= 0x01;	//Enable interrupt on both edges (mcpStat pin)
 	
 	if(gpio_btn_read(&mcpStat))
 		PORTC.OUTCLR = PIN2_bm;
 	else
 		PORTC.OUTSET = PIN2_bm;
 	
-	sei();
+	sei();	//Enable interrupts
 	
-	
-	
-	doutA.out = &PORTA.OUT;
-	doutA.dir = &PORTA.DIR;
-	doutA.pin0 = PIN4_bp;
-	doutA.sequence = NORMAL;
+	/* Init peripherals */
 	gpio_dout_init(&doutA);
-	
-	doutB.out = &PORTB.OUT;
-	doutB.dir = &PORTB.DIR;
-	doutB.pin0 = PIN0_bp;
-	doutB.sequence = NORMAL;
 	gpio_dout_init(&doutB);
-	
-	btn1.in = &PORTD.IN;
-	btn1.dir = &PORTD.DIR;
-	btn1.pinctrl = &PORTD.PIN0CTRL;
-	btn1.pin = PIN0_bp;
 	gpio_btn_init(&btn1);
-	
-	btn2.in = &PORTD.IN;
-	btn2.dir = &PORTD.DIR;
-	btn2.pinctrl = &PORTD.PIN5CTRL;
-	btn2.pin = PIN5_bp;
 	gpio_btn_init(&btn2);
-	
-	dinA.in = &PORTD.IN;
-	dinA.dir = &PORTD.DIR;
-	dinA.pinctrl = &PORTD.PIN1CTRL;
-	dinA.pin0 = PIN1_bp;
-	dinA.sequence = REVERSED;
 	gpio_din_init(&dinA);
-	
 	
 	timerb_initPWM(&PWM1);
 	timerb_initPWM(&PWM2);
 	
 	adcInit();
-	srand(getSeed());
+	srand(getSeed());	//Get seed for random function (getSeed uses the ADC)
 	adcDeInit();
+	
 	
 	//Enter program mode
 	if(gpio_btn_read(&btn2) == 0){
 		
 		//blink twice to visualize entering of prog mode
-		gpio_dout_write(&doutA, 0xf);
-		gpio_dout_write(&doutB, 0xf);
-		_delay_ms(150);
-		gpio_dout_write(&doutA, 0x0);
-		gpio_dout_write(&doutB, 0x0);
-		_delay_ms(150);
-		gpio_dout_write(&doutA, 0xf);
-		gpio_dout_write(&doutB, 0xf);
-		_delay_ms(150);
-		gpio_dout_write(&doutA, 0x0);
-		gpio_dout_write(&doutB, 0x0);
-		_delay_ms(150);
+		for(int i = 0; i < 4; i++){
+			uint8_t doutVal[] = {0xf, 0x0, 0xf, 0x0};
+							
+			gpio_dout_write(&doutA, doutVal[i]);
+			gpio_dout_write(&doutB, doutVal[i]);
+			_delay_ms(150);
+		}
 		
 		while(progCounter < MEMORY_SIZE){
 			programmInstruction();
 			progCounter++;
 		}
-	
 		
 	//Enter intepretor mode
 	}else{
@@ -167,63 +162,18 @@ int main(void){
 			buffer[i] = EEPROM_read(i);
 		}
 		
-		while(progCounter < MEMORY_SIZE){	
+		while(progCounter < MEMORY_SIZE){
+				
+#ifdef EXTENDED_DEBUG
+			PORTA.OUTTGL = PIN0_bm;
+#endif //EXTENDED_DEBUG
+
 			tps_splitInstruction(buffer[progCounter], &command, &data);
 			
-			switch(command){
-				case 0x0:
-					command0();
-				break;	
-				case 0x1:
-					command1();
-				break;	
-				case 0x2:
- 					command2();
-				break;				
-				case 0x3: 
-					command3();
-				break;				
-				case 0x4:
-					command4();
-				break;				
-				case 0x5:
-					command5();
-				break;
-				case 0x6:
-					command6();
-				break;
-				case 0x7:
-					command7();
-				break;
-				case 0x8:
-					command8();
-				break;
-				case 0x9:
-					command9();
-				break;
-				case 0xA:
-					commandA();
-				break;
-				case 0xB:
-					commandB();
-				break;
-				case 0xC:
-					commandC();
-				break;
-				case 0xD:
-					commandD();
-				break;
-				case 0xE:
-					commandE();
-				break;
-				case 0xF:
-					commandF();
-				break;
-			}	
+			( *(commandFunc[command]))();
+			
 		}
-		
-	//Go in Safestate
-		
+			
 	}
 	
 }
@@ -615,7 +565,7 @@ void programmInstruction(){
 }
 
 
-//Init MCP73831 Charge status sensing
+//Update MCP73831 Charge status led 
 ISR(PORTC_PORT_vect){
 	if(gpio_btn_read(&mcpStat))
 		PORTC.OUTCLR = PIN2_bm;
