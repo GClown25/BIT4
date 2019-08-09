@@ -24,9 +24,15 @@ void gpio_din_init(GPIO_DIN *aDin){
 	//Configure the 4 DIN bits a input
 	*aDin->dir &= MASK_CLEAR_4BIT(aDin->pin0);
 	
-	//Set the internal Pullup for the input pins
 	for(int i = 0; i  <= 3; i++){
-		*(aDin->pinctrl + i) = 0x08;
+		#ifdef BOARD_V10
+			*(aDin->pinctrl + i) = 0x08;			/* Set the internal pullup for the input pins */
+		#elif BOARD_V11B
+			*(aDin->pinctrl + i) = 0x08 | 0x03;		/* Set the internal pullup and enable the interrupt on the falling edge */
+			gpio_dout_init(&aDin->shadowReg);
+		#else
+			#error Please define a Board Version
+		#endif	
 	}
 }
 
@@ -74,6 +80,22 @@ void gpio_dout_writeBit(GPIO_DOUT *aDout, uint8_t aBit, uint8_t aBitNr){
 	*aDout->out = tempReg;
 }
 
+void gpio_dout_toggleBit(GPIO_DOUT *aDout, uint8_t aBitNr){
+	uint8_t tempReg, tempBitNr;
+	
+	if(aDout->sequence == REVERSED){
+		tempBitNr = 3 - aBitNr;
+		}else{
+		tempBitNr = aBitNr;
+	}
+	
+	tempReg = *aDout->out;
+	
+	tempReg ^= MASK_SET_1BIT(aDout->pin0 + tempBitNr);
+		
+	*aDout->out = tempReg;
+}
+
 uint8_t gpio_dout_read(GPIO_DOUT *aDout){
 	uint8_t tempReg;
 	
@@ -92,14 +114,19 @@ uint8_t gpio_dout_read(GPIO_DOUT *aDout){
 uint8_t gpio_din_read(GPIO_DIN *aDin){
 	uint8_t tempReg;
 	
-	tempReg = (*aDin->in >> aDin->pin0) & 0xf;
+	#ifdef BOARD_V10
+		tempReg = (*aDin->in >> aDin->pin0) & 0xf;
+		
+		if(aDin->sequence == REVERSED){
+			return lookupReverse4bit[tempReg];
+		}else{
+			return tempReg;
+		}
+	#elif BOARD_V11B
+		tempReg = gpio_dout_read(&aDin->shadowReg);
+	#endif
 	
-	if(aDin->sequence == REVERSED){
-		return lookupReverse4bit[tempReg];
-	}else{
-		return tempReg;
-	}
-	
+	return tempReg;	
 }
 
 
