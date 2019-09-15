@@ -228,7 +228,7 @@ void command4(){
 void command5(){
 	switch(data){
 		case 0x0:
-			ram[ramAddr] = varA;
+			ram[varB] = varA;
 		break;
 		case 0x1:
 			varB = varA;
