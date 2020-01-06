@@ -3,6 +3,11 @@
 *
 * Created: 09.02.2019
 * Author : GClown25
+*
+*
+*	@info	Make sure the correct board version is defined in the
+*			project properties (Allowed values are: BOARD_V10 or BOARD_V11B)
+*
 */
 
 #define F_CPU 5000000UL
@@ -28,7 +33,14 @@ GPIO_BTN btn1 =		{ &PORTD.PIN0CTRL,	&PORTD.DIR,	&PORTD.IN,	PIN0_bp	};
 GPIO_BTN btn2 =		{ &PORTD.PIN5CTRL,	&PORTD.DIR,	&PORTD.IN,	PIN5_bp };
 GPIO_DOUT doutA =	{ &PORTA.OUT,	&PORTA.DIR,	NORMAL,	PIN4_bp };	
 GPIO_DOUT doutB =	{ &PORTB.OUT,	&PORTB.DIR,	NORMAL,	PIN0_bp };
+#ifdef BOARD_V10
 GPIO_DIN dinA =		{ &PORTD.PIN1CTRL,	&PORTD.DIR,	&PORTD.IN,	REVERSED,	PIN1_bp };
+#elif BOARD_V11B
+
+GPIO_DIN dinA =		{ &PORTD.PIN1CTRL,	&PORTD.DIR,	&PORTD.IN,	REVERSED,	PIN1_bp, &PORTD.INTFLAGS, 
+					{ &PORTE.OUT,	&PORTE.DIR,	NORMAL,	PIN0_bp }
+					};
+#endif
 
 #define PWM1 TCB0
 #define PWM2 TCB1
@@ -574,3 +586,21 @@ ISR(PORTC_PORT_vect){
 		
 	PORTC.INTFLAGS = PIN0_bm;
 }
+
+#ifdef BOARD_V11B
+ISR(PORTD_PORT_vect){
+	
+	/* Toggle the bit in the shadow register if the corresponding Din Button got pressed */
+	for(int i = 0; i  <= 3; i++){	
+		if(*dinA.intflags & (1 << (dinA.pin0 + i)) ){
+			if(dinA.sequence == NORMAL)
+				gpio_dout_toggleBit(&dinA.shadowReg, i);
+			else
+				gpio_dout_toggleBit(&dinA.shadowReg, 3U-i);
+			
+			*dinA.intflags = 1 << (dinA.pin0 + i);
+		}
+	}
+	
+}
+#endif

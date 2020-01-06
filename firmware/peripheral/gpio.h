@@ -42,6 +42,12 @@ typedef struct
 	volatile uint8_t *in;
 	GPIO_SEQUENCE sequence;
 	uint8_t pin0;
+	
+#ifdef BOARD_V11B
+	volatile uint8_t *intflags;
+	GPIO_DOUT shadowReg;			
+#endif
+	
 }GPIO_DIN;
 
 //Button
@@ -58,6 +64,7 @@ typedef struct
 void gpio_dout_init(GPIO_DOUT *aDout);
 void gpio_dout_write(GPIO_DOUT *aDout, uint8_t aData);
 void gpio_dout_writeBit(GPIO_DOUT *aDout, uint8_t aBit, uint8_t aBitNr);
+void gpio_dout_toggleBit(GPIO_DOUT *aDout, uint8_t aBitNr);
 uint8_t gpio_dout_read(GPIO_DOUT *aDout);
 
 void gpio_din_init(GPIO_DIN *aDin);
